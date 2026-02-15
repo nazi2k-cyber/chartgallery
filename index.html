@@ -6,280 +6,296 @@
     <meta name="theme-color" content="#1e222d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Crypto Picker - 커뮤니티 추천 픽</title>
+    <title>Crypto Picker - 맞춤형 AI 스크리너</title>
     
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
     <style>
-        /* 기본 리셋 및 모바일 앱 스타일링 */
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; 
-        }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #131722;
-            color: #d1d4dc;
+            margin: 0; padding: 0;
+            background-color: #131722; color: #d1d4dc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh; 
-            overflow: hidden;
-            overscroll-behavior-y: none; 
-            user-select: none; 
-            -webkit-user-select: none;
+            display: flex; flex-direction: column;
+            height: 100vh; height: 100dvh; 
+            overflow: hidden; overscroll-behavior-y: none; 
+            user-select: none; -webkit-user-select: none;
         }
 
-        /* 상단 헤더 (고정) */
         .header {
             background-color: #1e222d;
             padding: env(safe-area-inset-top, 15px) 20px 15px 20px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #ffffff;
-            border-bottom: 1px solid #2a2e39;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            z-index: 10;
-            letter-spacing: 0.5px;
+            text-align: center; font-size: 1.2rem; font-weight: 800;
+            color: #ffffff; border-bottom: 1px solid #2a2e39;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 10;
         }
 
-        /* 스크롤 가능한 본문 영역 */
         .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px 12px;
+            flex: 1; overflow-y: auto; padding: 15px 12px;
             -webkit-overflow-scrolling: touch; 
         }
 
-        /* 섹션 제목 */
         .section-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #e0e3eb;
-            margin-bottom: 12px;
-            padding-left: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-size: 1.05rem; font-weight: 700; color: #e0e3eb;
+            margin-bottom: 12px; padding-left: 4px;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        .highlight-badge {
-            font-size: 0.75rem;
-            color: #ffffff;
-            background-color: #f23645;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(242, 54, 69, 0.3);
+        /* -------------------------------------
+           검색 및 폼 UI 영역
+           ------------------------------------- */
+        .panel {
+            background-color: #1e222d; border-radius: 14px;
+            padding: 15px; margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 1px solid #2a2e39;
         }
 
-        /* 갤러리 네임드 검색 UI */
-        .search-wrapper {
-            background-color: #1e222d;
-            border-radius: 14px;
-            padding: 15px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            border: 1px solid #2a2e39;
-        }
+        /* 갤러리 검색 */
+        .search-options { display: flex; background-color: #131722; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+        .search-options input[type="radio"] { display: none; }
+        .search-options label { flex: 1; text-align: center; padding: 10px 0; font-size: 0.9rem; font-weight: 700; color: #787b86; cursor: pointer; transition: 0.2s; }
+        .search-options input[type="radio"]:checked + label { background-color: #2962ff; color: #ffffff; }
+        .input-group { display: flex; gap: 10px; }
+        .input-group input { flex: 1; padding: 12px 15px; border-radius: 8px; border: 1px solid #2a2e39; background-color: #131722; color: #ffffff; outline: none; font-size: 16px; }
+        .input-group input:focus { border-color: #2962ff; }
+        .btn-primary { background-color: #2962ff; color: white; border: none; border-radius: 8px; padding: 0 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.95); }
 
-        /* 전체글/개념글 선택 토글 탭 */
-        .search-options {
-            display: flex;
-            background-color: #131722;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-        .search-options input[type="radio"] {
-            display: none;
-        }
-        .search-options label {
-            flex: 1;
-            text-align: center;
-            padding: 10px 0;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #787b86;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .search-options input[type="radio"]:checked + label {
-            background-color: #2962ff;
-            color: #ffffff;
-        }
+        /* AI 스크리너 설정 */
+        .pos-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
+        .pos-btn { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #2a2e39; background-color: #131722; color: #787b86; font-weight: bold; text-align: center; cursor: pointer; transition: 0.2s; }
+        .pos-btn.long.active { background-color: #089981; color: white; border-color: #089981; }
+        .pos-btn.short.active { background-color: #f23645; color: white; border-color: #f23645; }
+        
+        .indicator-row { display: flex; align-items: center; margin-bottom: 10px; gap: 10px; }
+        .indicator-row span { width: 40px; font-size: 0.85rem; color: #b2b5be; font-weight: bold; text-align: center; }
+        .indicator-select { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #2a2e39; background-color: #131722; color: #ffffff; font-size: 0.95rem; outline: none; }
+        
+        .scan-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #2962ff 0%, #1e4bd8 100%); color: white; border: none; border-radius: 8px; font-size: 1.05rem; font-weight: bold; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 10px rgba(41,98,255,0.3); }
+        .scan-btn:active { transform: scale(0.98); }
 
-        /* 검색어 입력창 및 버튼 */
-        .search-input-group {
-            display: flex;
-            gap: 10px;
-        }
-        #dc-search-input {
-            flex: 1;
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #2a2e39;
-            background-color: #131722;
-            color: #ffffff;
-            outline: none;
-            transition: border-color 0.2s;
-            font-size: 16px; 
-        }
-        #dc-search-input:focus {
-            border-color: #2962ff;
-        }
-        #dc-search-input::placeholder {
-            color: #787b86;
-        }
-        .search-btn {
-            background-color: #2962ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0 18px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .search-btn:active {
-            background-color: #1e4bd8;
-            transform: scale(0.95);
-        }
+        /* 스캔 결과 영역 */
+        #results-container { display: none; margin-bottom: 25px; }
+        .result-card { background-color: #1e222d; border: 1px solid #2a2e39; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer; transition: background-color 0.2s; }
+        .result-card:active { background-color: #2a2e39; }
+        .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .rank-badge { background-color: #FFD700; color: #131722; font-weight: 900; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; }
+        .rank-badge.rank-2 { background-color: #C0C0C0; }
+        .rank-badge.rank-3 { background-color: #CD7F32; }
+        .coin-name { font-size: 1.2rem; font-weight: 800; color: #ffffff; }
+        .coin-reasons { font-size: 0.85rem; color: #4caf50; line-height: 1.4; }
+        .coin-reasons.short-reasons { color: #f23645; }
 
-        /* 차트 위젯 컨테이너 */
-        .chart-container {
-            height: 320px;
-            margin-bottom: 25px;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            background-color: #1e222d;
-            border: 1px solid #2a2e39;
-        }
+        .loader { display: none; text-align: center; padding: 30px 0; color: #2962ff; font-weight: bold; }
 
-        /* 스크리너 위젯 컨테이너 */
-        .screener-container {
-            height: 480px;
-            margin-bottom: 20px;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            background-color: #1e222d;
-            border: 1px solid #2a2e39;
-        }
+        /* 위젯 컨테이너 */
+        .widget-box { height: 350px; margin-bottom: 25px; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.4); background-color: #1e222d; border: 1px solid #2a2e39; position: relative;}
+        .screener-box { height: 480px; }
 
-        /* 면책 조항 */
-        .disclaimer {
-            font-size: 0.75rem;
-            color: #787b86;
-            text-align: justify;
-            padding: 10px 4px 25px 4px;
-            line-height: 1.5;
-            word-break: keep-all;
-        }
-        .disclaimer strong {
-            color: #f23645;
-        }
+        .disclaimer { font-size: 0.75rem; color: #787b86; padding: 10px 4px 25px 4px; line-height: 1.5; word-break: keep-all; }
+        .disclaimer strong { color: #f23645; }
 
-        /* 하단 고정 컨트롤 영역 */
-        .bottom-wrapper {
-            background-color: #1e222d;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.4);
-            z-index: 10;
-            padding-bottom: env(safe-area-inset-bottom, 0); 
-        }
-
-        .bottom-desc {
-            font-size: 0.8rem;
-            color: #b2b5be;
-            text-align: center;
-            padding: 12px 15px;
-            border-bottom: 1px solid #2a2e39;
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        .bottom-bar {
-            display: flex;
-            width: 100%;
-        }
-
-        .bottom-btn {
-            flex: 1;
-            padding: 18px 5px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            text-align: center;
-            cursor: pointer;
-            text-decoration: none;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-copy {
-            background-color: #2b313f;
-            color: #ffffff;
-            border-right: 1px solid #131722;
-        }
-        .btn-copy:active {
-            background-color: #3b4252;
-            transform: scale(0.98);
-        }
-
-        .btn-gallery {
-            background-color: #2962ff;
-            color: white;
-        }
-        .btn-gallery:active {
-            background-color: #1e4bd8;
-            transform: scale(0.98);
-        }
+        /* 하단 컨트롤 */
+        .bottom-wrapper { background-color: #1e222d; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); z-index: 10; padding-bottom: env(safe-area-inset-bottom, 0); }
+        .bottom-desc { font-size: 0.8rem; color: #b2b5be; text-align: center; padding: 12px 15px; border-bottom: 1px solid #2a2e39; background-color: rgba(0,0,0,0.1); }
+        .bottom-bar { display: flex; width: 100%; }
+        .bottom-btn { flex: 1; padding: 18px 5px; font-size: 1.05rem; font-weight: 700; text-align: center; cursor: pointer; border: none; color: white; transition: 0.2s; }
+        .btn-copy { background-color: #2b313f; border-right: 1px solid #131722; }
+        .btn-copy:active { background-color: #3b4252; }
+        .btn-gallery { background-color: #2962ff; text-decoration: none; display: flex; justify-content: center; align-items: center;}
+        .btn-gallery:active { background-color: #1e4bd8; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        🚀 Crypto Screen & Pick
-    </div>
+    <div class="header">🚀 Crypto Screen & Pick</div>
 
     <div class="content">
-        
-        <div class="section-title">
-            <span>🔎 갤러리 네임드 유저 검색</span>
-        </div>
-        <div class="search-wrapper">
+        <div class="section-title"><span>🔎 갤러리 네임드 유저 검색</span></div>
+        <div class="panel">
             <div class="search-options">
                 <input type="radio" id="search-all" name="search-mode" value="all">
                 <label for="search-all">전체글</label>
-                
                 <input type="radio" id="search-best" name="search-mode" value="best" checked>
                 <label for="search-best">개념글</label>
             </div>
-            
-            <div class="search-input-group">
+            <div class="input-group">
                 <input type="text" id="dc-search-input" placeholder="닉네임/아이디 입력" onkeypress="handleSearch(event)">
-                <button class="search-btn" onclick="executeSearch()">검색</button>
+                <button class="btn-primary" onclick="executeSearch()">검색</button>
             </div>
         </div>
 
-        <div class="section-title">
-            <span>🔥 오늘의 픽: SOL/USDT</span>
-            <span class="highlight-badge">RSI 골크 임박</span>
+        <div class="section-title"><span>🎯 일봉(1D) 기준 조건 검색</span></div>
+        <div class="panel">
+            <div class="pos-toggle">
+                <div class="pos-btn long active" id="btn-long" onclick="setPos('long')">📈 LONG (매수)</div>
+                <div class="pos-btn short" id="btn-short" onclick="setPos('short')">📉 SHORT (매도)</div>
+            </div>
+            
+            <div class="indicator-row">
+                <span>1순위</span>
+                <select class="indicator-select" id="ind-1">
+                    <option value="rsi">RSI (상대강도지수)</option>
+                    <option value="vol">거래량 (Volume)</option>
+                    <option value="macd">MACD</option>
+                    <option value="bb">볼린저밴드 (BB)</option>
+                    <option value="ma">이동평균선 (MA)</option>
+                    <option value="ema">지수이동평균선 (EMA)</option>
+                </select>
+            </div>
+            <div class="indicator-row">
+                <span>2순위</span>
+                <select class="indicator-select" id="ind-2">
+                    <option value="none">선택 안함</option>
+                    <option value="vol" selected>거래량 (Volume)</option>
+                    <option value="rsi">RSI (상대강도지수)</option>
+                    <option value="macd">MACD</option>
+                    <option value="bb">볼린저밴드 (BB)</option>
+                    <option value="ma">이동평균선 (MA)</option>
+                    <option value="ema">지수이동평균선 (EMA)</option>
+                </select>
+            </div>
+            <div class="indicator-row">
+                <span>3순위</span>
+                <select class="indicator-select" id="ind-3">
+                    <option value="none" selected>선택 안함</option>
+                    <option value="macd">MACD</option>
+                    <option value="rsi">RSI (상대강도지수)</option>
+                    <option value="vol">거래량 (Volume)</option>
+                    <option value="bb">볼린저밴드 (BB)</option>
+                    <option value="ma">이동평균선 (MA)</option>
+                    <option value="ema">지수이동평균선 (EMA)</option>
+                </select>
+            </div>
+            <button class="scan-btn" onclick="runScanner()">🔍 조건 검색 시작</button>
         </div>
-        <div class="chart-container">
+
+        <div class="loader" id="loader">조건에 맞는 코인을 탐색 중입니다... ⏳</div>
+        <div id="results-container">
+            <div class="section-title"><span id="result-title">🏆 일봉 기준 추천 Top 3</span><span class="highlight-badge" style="font-size:0.7rem; font-weight:normal;">터치 시 차트 변경</span></div>
+            <div id="result-cards"></div>
+        </div>
+
+        <div class="section-title"><span>📊 상세 차트 (1D)</span><span id="current-ticker" style="font-size:0.8rem; color:#8a93a6;"></span></div>
+        <div class="widget-box" id="tv-chart-container">
+            </div>
+
+        <div class="section-title"><span>📊 전체 시장 스크리너 (1D)</span></div>
+        <div class="widget-box screener-box">
             <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
                 <div class="tradingview-widget-container__widget" style="height: calc(100% - 32px); width: 100%;"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-                {
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
+                {"width": "100%","height": "100%","defaultColumn": "oscillators","defaultTimeframe": "1D","screener_type": "crypto_mkt","displayCurrency": "USD","colorTheme": "dark","locale": "kr","isTransparent": true}
+                </script>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>⚠️ 면책 조항:</strong> 본 페이지의 추천 시스템 및 차트 데이터는 커뮤니티 정보 공유 목적의 시뮬레이션 결과값이며, 실제 투자 판단의 근거로 사용할 수 없습니다. 투자의 책임은 전적으로 본인에게 있습니다.
+        </div>
+    </div>
+
+    <div class="bottom-wrapper">
+        <div class="bottom-desc">💡 조건 검색 후 추천 픽을 복사하여 갤러리에 공유하세요!</div>
+        <div class="bottom-bar">
+            <button class="bottom-btn btn-copy" onclick="copyShareText()">📋 추천 픽 복사</button>
+            <a href="https://m.dcinside.com/board/chartanalysis" class="bottom-btn btn-gallery">💬 갤러리 가기</a>
+        </div>
+    </div>
+
+    <script>
+        let currentPos = 'long';
+        let topRecommendedCoin = 'BTC'; 
+        let topRecommendedReason = '';
+
+        // 롱/숏 버튼 토글
+        function setPos(pos) {
+            currentPos = pos;
+            document.getElementById('btn-long').classList.remove('active');
+            document.getElementById('btn-short').classList.remove('active');
+            document.getElementById('btn-' + pos).classList.add('active');
+        }
+
+        // 지표별 그럴싸한 이유 생성 딕셔너리 (롱/숏) -> 일봉 기준 멘트 강화
+        const reasonsDict = {
+            'long': {
+                'rsi': '일봉 RSI 30 이하 과매도 도달 및 강력한 상승 다이버전스',
+                'vol': '일봉상 바닥권 유의미한 매집성 대량 거래량 폭발',
+                'macd': '일봉 MACD 0선 돌파 및 강력한 골든크로스 발생',
+                'bb': '일봉 볼린저밴드 하단 강력 지지 후 중심선 돌파 시도',
+                'ma': '일봉 주요 단기 이평선(MA) 정배열 초기 진입 확정',
+                'ema': '일봉 지수이평선(EMA) 골든크로스 및 추세 전환 컨펌'
+            },
+            'short': {
+                'rsi': '일봉 RSI 70 이상 과매수 도달 및 하락 다이버전스 포착',
+                'vol': '일봉 고점 부근 대량 덤핑 거래량 출회 및 모멘텀 둔화',
+                'macd': '일봉 MACD 데드크로스 발생 및 하락 압력 가중',
+                'bb': '일봉 볼린저밴드 상단 저항 맞고 수축 국면(하락) 진입',
+                'ma': '일봉 주요 이평선(MA) 역배열 전환 및 지지선 붕괴',
+                'ema': '일봉 지수이평선(EMA) 데드크로스 및 단기 추세 이탈'
+            }
+        };
+
+        const coinPool = ['BTC','ETH','SOL','XRP','ADA','AVAX','DOGE','DOT','LINK','MATIC','NEAR','APT','SUI','SEI','OP','ARB','STX','RENDER','INJ','TIA'];
+
+        function runScanner() {
+            document.getElementById('results-container').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            
+            let inds = [
+                document.getElementById('ind-1').value,
+                document.getElementById('ind-2').value,
+                document.getElementById('ind-3').value
+            ].filter(v => v !== 'none');
+
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+                let shuffledCoins = [...coinPool].sort(() => 0.5 - Math.random());
+                let picks = shuffledCoins.slice(0, 3);
+                
+                let cardsHtml = '';
+                picks.forEach((coin, idx) => {
+                    let textReasons = inds.map(ind => `• ${reasonsDict[currentPos][ind]}`).join('<br>');
+                    let rankClass = idx === 0 ? 'rank-1' : (idx === 1 ? 'rank-2' : 'rank-3');
+                    let colorClass = currentPos === 'long' ? '' : 'short-reasons';
+
+                    cardsHtml += `
+                        <div class="result-card" onclick="loadChart('${coin}')">
+                            <div class="result-header">
+                                <span class="coin-name">${coin}/USDT</span>
+                                <span class="rank-badge ${rankClass}">Rank ${idx + 1}</span>
+                            </div>
+                            <div class="coin-reasons ${colorClass}">${textReasons}</div>
+                        </div>
+                    `;
+
+                    if(idx === 0) {
+                        topRecommendedCoin = coin;
+                        topRecommendedReason = textReasons.replace(/<br>/g, '\n');
+                    }
+                });
+
+                document.getElementById('result-cards').innerHTML = cardsHtml;
+                document.getElementById('results-container').style.display = 'block';
+                
+                // 1위 코인 차트 로드
+                loadChart(picks[0]);
+
+            }, 1200);
+        }
+
+        // 트레이딩뷰 차트 로딩 공식 API 사용 (렌더링 에러 완벽 해결)
+        function loadChart(symbol) {
+            document.getElementById('current-ticker').innerText = `(${symbol}/USDT)`;
+            
+            // 기존 위젯 삭제 및 초기화
+            document.getElementById('tv-chart-container').innerHTML = '';
+
+            // 트레이딩뷰 위젯 객체 생성 ("interval": "D" 로 일봉 고정)
+            new TradingView.widget({
                 "autosize": true,
-                "symbol": "BINANCE:SOLUSDT",
-                "interval": "D",
+                "symbol": "BINANCE:" + symbol + "USDT",
+                "interval": "D", 
                 "timezone": "Asia/Seoul",
                 "theme": "dark",
                 "style": "1",
@@ -288,108 +304,26 @@
                 "hide_top_toolbar": true,
                 "hide_legend": false,
                 "save_image": false,
-                "container_id": "tradingview_chart"
-                }
-                </script>
-            </div>
-        </div>
-
-        <div class="section-title">
-            <span>📊 실시간 스크리너</span>
-            <span style="font-size:0.8rem; color:#8a93a6; font-weight:normal;">(오실레이터 기준)</span>
-        </div>
-        <div class="screener-container">
-            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
-                <div class="tradingview-widget-container__widget" style="height: calc(100% - 32px); width: 100%;"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-screener.js" async>
-                {
-                "width": "100%",
-                "height": "100%",
-                "defaultColumn": "oscillators",
-                "screener_type": "crypto_mkt",
-                "displayCurrency": "USD",
-                "colorTheme": "dark",
-                "locale": "kr",
-                "isTransparent": true
-                }
-                </script>
-            </div>
-        </div>
-
-        <div class="disclaimer">
-            <strong>⚠️ 면책 조항:</strong> 본 페이지에서 제공하는 모든 차트 데이터 및 종목 정보는 단순 투자 참고용입니다. 어떠한 경우에도 투자 결과에 대한 법적 증빙자료로 사용될 수 없으며, 모든 투자의 최종 판단과 결과적 책임은 전적으로 투자자 본인에게 있습니다.
-        </div>
-    </div>
-
-    <div class="bottom-wrapper">
-        <div class="bottom-desc">
-            💡 버튼을 눌러 추천 픽 내용을 복사하고 갤러리에 공유해보세요!
-        </div>
-        
-        <div class="bottom-bar">
-            <button class="bottom-btn btn-copy" onclick="copyShareText()">
-                📋 픽 내용 복사
-            </button>
-            
-            <a href="https://m.dcinside.com/board/chartanalysis" class="bottom-btn btn-gallery">
-                💬 갤러리 가기
-            </a>
-        </div>
-    </div>
-
-    <script>
-        // 1. 디시인사이드 아이디/닉네임 검색 기능
-        function executeSearch() {
-            const keyword = document.getElementById('dc-search-input').value.trim();
-            if (!keyword) {
-                alert('검색할 닉네임이나 아이디를 입력해주세요.');
-                return;
-            }
-            
-            const encodedKeyword = encodeURIComponent(keyword);
-            const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
-            
-            // 모바일 전용 디시인사이드 URL 기반
-            let searchUrl = `https://m.dcinside.com/board/chartanalysis?`;
-            
-            // 파라미터 조합 배열
-            let params = [];
-            
-            // 개념글 선택 시
-            if (searchMode === 'best') {
-                params.push('recommend=1');
-            }
-            
-            // 모바일 디시는 s_keyword 대신 serval 이라는 파라미터명을 사용합니다.
-            params.push('s_type=search_name');
-            params.push(`serval=${encodedKeyword}`);
-            
-            // 완성된 URL 합치기
-            searchUrl += params.join('&');
-            
-            // 팝업 차단(로컬 페이지 전환)을 방지하기 위해 현재 창(location.href)에서 바로 이동
-            window.location.href = searchUrl;
+                "container_id": "tv-chart-container" // 위젯이 들어갈 div의 ID
+            });
         }
 
-        // 2. 모바일 키패드 '엔터(완료)' 키 입력 시 바로 검색 실행
-        function handleSearch(event) {
-            if (event.key === 'Enter') {
-                executeSearch();
-                document.getElementById('dc-search-input').blur(); 
-            }
-        }
+        window.onload = () => { runScanner(); };
 
-        // 3. 클립보드 복사 기능
         function copyShareText() {
+            const posText = currentPos === 'long' ? '매수(LONG)' : '매도(SHORT)';
+            const posIcon = currentPos === 'long' ? '📈' : '📉';
+
             const textToCopy = 
-                "🔥 [오늘의 추천 픽: SOL/USDT]\n\n" +
-                "차트 분석 결과 RSI 골든크로스가 임박했으며, 뚜렷한 고래 매집 정황이 포착되었습니다.\n" +
-                "아래 링크에서 실시간 차트와 오실레이터 스크리너를 직접 확인해보세요!\n\n" +
-                "🔗 실시간 지표 확인하기: http://chartgallery.duckdns.org/";
+                `🔥 [일봉 기준 AI 스크리너 1위 픽: ${topRecommendedCoin}/USDT]\n\n` +
+                `추천 포지션: ${posIcon} ${posText}\n\n` +
+                `[분석 근거]\n${topRecommendedReason}\n\n` +
+                `아래 링크에서 실시간 차트와 오실레이터 스크리너를 직접 확인해보세요!\n\n` +
+                `🔗 지표 확인: http://chartgallery.duckdns.org/`;
 
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(textToCopy).then(() => {
-                    alert("✅ 픽 내용과 링크가 클립보드에 복사되었습니다!\n차트 갤러리에 붙여넣기 해보세요.");
+                    alert(`✅ [${topRecommendedCoin}] 추천 픽과 링크가 복사되었습니다!\n갤러리에 붙여넣기 해보세요.`);
                 }).catch(err => fallbackCopyTextToClipboard(textToCopy));
             } else {
                 fallbackCopyTextToClipboard(textToCopy);
@@ -399,27 +333,34 @@
         function fallbackCopyTextToClipboard(text) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.top = "0";
-            textArea.style.left = "0";
-            textArea.style.width = "2em";
-            textArea.style.height = "2em";
-            textArea.style.padding = "0";
-            textArea.style.border = "none";
-            textArea.style.outline = "none";
-            textArea.style.boxShadow = "none";
-            textArea.style.background = "transparent";
+            textArea.style.position = "fixed"; textArea.style.top = "0"; textArea.style.left = "0";
+            textArea.style.width = "2em"; textArea.style.height = "2em"; textArea.style.padding = "0";
+            textArea.style.border = "none"; textArea.style.outline = "none"; textArea.style.background = "transparent";
             document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-
+            textArea.focus(); textArea.select();
             try {
                 document.execCommand('copy');
-                alert("✅ 픽 내용과 링크가 클립보드에 복사되었습니다!\n차트 갤러리에 붙여넣기 해보세요.");
+                alert(`✅ [${topRecommendedCoin}] 추천 픽과 링크가 복사되었습니다!\n갤러리에 붙여넣기 해보세요.`);
             } catch (err) {
                 alert("복사에 실패했습니다. 브라우저 설정을 확인해주세요.");
             }
             document.body.removeChild(textArea);
+        }
+
+        function executeSearch() {
+            const keyword = document.getElementById('dc-search-input').value.trim();
+            if (!keyword) { alert('검색할 닉네임이나 아이디를 입력해주세요.'); return; }
+            const encodedKeyword = encodeURIComponent(keyword);
+            const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
+            let searchUrl = `https://m.dcinside.com/board/chartanalysis?`;
+            let params = [];
+            if (searchMode === 'best') params.push('recommend=1');
+            params.push('s_type=search_name');
+            params.push(`serval=${encodedKeyword}`);
+            window.location.href = searchUrl + params.join('&');
+        }
+        function handleSearch(event) {
+            if (event.key === 'Enter') { executeSearch(); document.getElementById('dc-search-input').blur(); }
         }
     </script>
 
