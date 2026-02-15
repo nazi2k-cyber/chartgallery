@@ -75,9 +75,7 @@
             box-shadow: 0 2px 4px rgba(242, 54, 69, 0.3);
         }
 
-        /* -------------------------------------
-           갤러리 네임드 검색 UI (토글 탭 + 입력창)
-           ------------------------------------- */
+        /* 갤러리 네임드 검색 UI */
         .search-wrapper {
             background-color: #1e222d;
             border-radius: 14px;
@@ -96,7 +94,7 @@
             overflow: hidden;
         }
         .search-options input[type="radio"] {
-            display: none; /* 실제 라디오 버튼 숨김 */
+            display: none;
         }
         .search-options label {
             flex: 1;
@@ -108,7 +106,6 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        /* 선택된 탭 스타일 */
         .search-options input[type="radio"]:checked + label {
             background-color: #2962ff;
             color: #ffffff;
@@ -128,7 +125,7 @@
             color: #ffffff;
             outline: none;
             transition: border-color 0.2s;
-            font-size: 16px; /* 줌인 방지 */
+            font-size: 16px; 
         }
         #dc-search-input:focus {
             border-color: #2962ff;
@@ -334,7 +331,7 @@
                 📋 픽 내용 복사
             </button>
             
-            <a href="https://m.dcinside.com/board/chartanalysis" target="_blank" class="bottom-btn btn-gallery">
+            <a href="https://m.dcinside.com/board/chartanalysis" class="bottom-btn btn-gallery">
                 💬 갤러리 가기
             </a>
         </div>
@@ -350,23 +347,28 @@
             }
             
             const encodedKeyword = encodeURIComponent(keyword);
-            
-            // 라디오 버튼에서 현재 선택된 모드(전체글: all / 개념글: best) 가져오기
             const searchMode = document.querySelector('input[name="search-mode"]:checked').value;
             
-            // 베이스 URL
-            let searchUrl = `https://gall.dcinside.com/mgallery/board/lists/?id=chartanalysis`;
+            // 모바일 전용 디시인사이드 URL 기반
+            let searchUrl = `https://m.dcinside.com/board/chartanalysis?`;
             
-            // 개념글 선택 시 파라미터 추가
+            // 파라미터 조합 배열
+            let params = [];
+            
+            // 개념글 선택 시
             if (searchMode === 'best') {
-                searchUrl += `&exception_mode=recommend`;
+                params.push('recommend=1');
             }
             
-            // 닉네임/아이디 검색 파라미터 추가
-            searchUrl += `&s_type=search_name&s_keyword=${encodedKeyword}`;
+            // 모바일 디시는 s_keyword 대신 serval 이라는 파라미터명을 사용합니다.
+            params.push('s_type=search_name');
+            params.push(`serval=${encodedKeyword}`);
             
-            // 새 탭(창)으로 열기
-            window.open(searchUrl, '_blank');
+            // 완성된 URL 합치기
+            searchUrl += params.join('&');
+            
+            // 팝업 차단(로컬 페이지 전환)을 방지하기 위해 현재 창(location.href)에서 바로 이동
+            window.location.href = searchUrl;
         }
 
         // 2. 모바일 키패드 '엔터(완료)' 키 입력 시 바로 검색 실행
