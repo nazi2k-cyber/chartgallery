@@ -2,10 +2,20 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#1e222d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Crypto Picker - 커뮤니티 추천 픽</title>
+    
     <style>
         /* 기본 리셋 및 모바일 앱 스타일링 */
+        * {
+            box-sizing: border-box;
+            /* 터치 시 발생하는 기본 파란색 하이라이트 제거 */
+            -webkit-tap-highlight-color: transparent; 
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -15,37 +25,45 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh; /* 최신 모바일 브라우저의 실제 화면 높이 반영 */
             overflow: hidden;
+            /* 당겨서 새로고침(Pull-to-refresh) 및 바운스 효과 방지 */
+            overscroll-behavior-y: none; 
+            /* 텍스트 드래그 선택 방지 (앱처럼 보이게 함) */
+            user-select: none; 
+            -webkit-user-select: none;
         }
 
         /* 상단 헤더 (고정) */
         .header {
             background-color: #1e222d;
-            padding: 15px 20px;
+            padding: env(safe-area-inset-top, 15px) 20px 15px 20px; /* 노치 디자인 대응 */
             text-align: center;
             font-size: 1.2rem;
-            font-weight: bold;
+            font-weight: 800;
             color: #ffffff;
             border-bottom: 1px solid #2a2e39;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             z-index: 10;
+            letter-spacing: 0.5px;
         }
 
         /* 스크롤 가능한 본문 영역 */
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 15px 10px;
-            -webkit-overflow-scrolling: touch;
+            padding: 15px 12px;
+            /* 부드러운 관성 스크롤 적용 */
+            -webkit-overflow-scrolling: touch; 
         }
 
         /* 섹션 제목 */
         .section-title {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #b2b5be;
-            margin-bottom: 10px;
-            padding-left: 5px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #e0e3eb;
+            margin-bottom: 12px;
+            padding-left: 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -55,41 +73,45 @@
             font-size: 0.75rem;
             color: #ffffff;
             background-color: #f23645;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-weight: normal;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(242, 54, 69, 0.3);
         }
 
         /* 차트 위젯 컨테이너 */
         .chart-container {
             height: 320px;
             margin-bottom: 25px;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             background-color: #1e222d;
+            border: 1px solid #2a2e39;
         }
 
         /* 스크리너 위젯 컨테이너 */
         .screener-container {
-            height: 450px;
+            height: 480px;
             margin-bottom: 20px;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             background-color: #1e222d;
+            border: 1px solid #2a2e39;
         }
 
         /* 면책 조항 */
         .disclaimer {
             font-size: 0.75rem;
-            color: #8a93a6;
+            color: #787b86;
             text-align: justify;
-            padding: 10px 5px 20px 5px;
-            line-height: 1.4;
+            padding: 10px 4px 25px 4px;
+            line-height: 1.5;
+            word-break: keep-all;
         }
         .disclaimer strong {
-            color: #ff5252;
+            color: #f23645;
         }
 
         /* 하단 고정 컨트롤 영역 (설명 + 2버튼) */
@@ -97,14 +119,17 @@
             background-color: #1e222d;
             box-shadow: 0 -4px 15px rgba(0,0,0,0.4);
             z-index: 10;
+            /* 아이폰 하단 홈 인디케이터 공간 확보 */
+            padding-bottom: env(safe-area-inset-bottom, 0); 
         }
 
         .bottom-desc {
             font-size: 0.8rem;
             color: #b2b5be;
             text-align: center;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-bottom: 1px solid #2a2e39;
+            background-color: rgba(0, 0, 0, 0.1);
         }
 
         .bottom-bar {
@@ -114,9 +139,9 @@
 
         .bottom-btn {
             flex: 1;
-            padding: 16px 5px;
-            font-size: 1rem;
-            font-weight: bold;
+            padding: 18px 5px;
+            font-size: 1.05rem;
+            font-weight: 700;
             text-align: center;
             cursor: pointer;
             text-decoration: none;
@@ -124,8 +149,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: background-color 0.2s;
+            gap: 8px;
+            transition: all 0.2s ease;
         }
 
         /* 왼쪽 복사 버튼 */
@@ -136,6 +161,7 @@
         }
         .btn-copy:active {
             background-color: #3b4252;
+            transform: scale(0.98);
         }
 
         /* 오른쪽 갤러리 이동 버튼 */
@@ -145,6 +171,7 @@
         }
         .btn-gallery:active {
             background-color: #1e4bd8;
+            transform: scale(0.98);
         }
     </style>
 </head>
@@ -156,7 +183,8 @@
 
     <div class="content">
         <div class="section-title">
-            🔥 오늘의 추천 픽: SOL/USDT <span class="highlight-badge">RSI 골크 임박</span>
+            <span>🔥 오늘의 픽: SOL/USDT</span>
+            <span class="highlight-badge">RSI 골크 임박</span>
         </div>
         <div class="chart-container">
             <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
@@ -181,7 +209,8 @@
         </div>
 
         <div class="section-title">
-            📊 실시간 스크리너 <span style="font-size:0.8rem; color:#8a93a6; font-weight:normal;">(오실레이터/RSI 기준)</span>
+            <span>📊 실시간 스크리너</span>
+            <span style="font-size:0.8rem; color:#8a93a6; font-weight:normal;">(오실레이터 기준)</span>
         </div>
         <div class="screener-container">
             <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
@@ -213,41 +242,59 @@
         
         <div class="bottom-bar">
             <button class="bottom-btn btn-copy" onclick="copyShareText()">
-                📋 픽 내용 & 링크 복사
+                📋 픽 내용 복사
             </button>
             
             <a href="https://m.dcinside.com/board/chartanalysis" target="_blank" class="bottom-btn btn-gallery">
-                💬 갤러리 바로가기
+                💬 갤러리 가기
             </a>
         </div>
     </div>
 
     <script>
         function copyShareText() {
-            // 커뮤니티에 복사될 선동/공유용 텍스트 작성 (요청하신 링크로 고정)
             const textToCopy = 
                 "🔥 [오늘의 추천 픽: SOL/USDT]\n\n" +
                 "차트 분석 결과 RSI 골든크로스가 임박했으며, 뚜렷한 고래 매집 정황이 포착되었습니다.\n" +
                 "아래 링크에서 실시간 차트와 오실레이터 스크리너를 직접 확인해보세요!\n\n" +
                 "🔗 실시간 지표 확인하기: http://chartgallery.duckdns.org/";
 
-            // 클립보드 복사 API 호출
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("✅ 추천 픽 설명과 링크가 클립보드에 복사되었습니다!\n차트 갤러리에 글쓰기를 눌러 바로 붙여넣기 해보세요.");
-            }).catch(err => {
-                // 구형 브라우저 또는 클립보드 권한 거부 시 대비용 Fallback
-                const fallbackInput = document.createElement("textarea");
-                fallbackInput.value = textToCopy;
-                document.body.appendChild(fallbackInput);
-                fallbackInput.select();
-                try {
-                    document.execCommand('copy');
-                    alert("✅ 추천 픽 설명과 링크가 클립보드에 복사되었습니다!\n차트 갤러리에 글쓰기를 눌러 바로 붙여넣기 해보세요.");
-                } catch (fallbackErr) {
-                    alert("복사에 실패했습니다. 브라우저의 클립보드 권한을 확인해주세요.");
-                }
-                document.body.removeChild(fallbackInput);
-            });
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert("✅ 픽 내용과 링크가 클립보드에 복사되었습니다!\n차트 갤러리에 붙여넣기 해보세요.");
+                }).catch(err => fallbackCopyTextToClipboard(textToCopy));
+            } else {
+                fallbackCopyTextToClipboard(textToCopy);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // 화면 밖으로 텍스트 영역 숨기기 (스크롤 튀는 현상 방지)
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.width = "2em";
+            textArea.style.height = "2em";
+            textArea.style.padding = "0";
+            textArea.style.border = "none";
+            textArea.style.outline = "none";
+            textArea.style.boxShadow = "none";
+            textArea.style.background = "transparent";
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                alert("✅ 픽 내용과 링크가 클립보드에 복사되었습니다!\n차트 갤러리에 붙여넣기 해보세요.");
+            } catch (err) {
+                alert("복사에 실패했습니다. 브라우저 설정을 확인해주세요.");
+            }
+            document.body.removeChild(textArea);
         }
     </script>
 
